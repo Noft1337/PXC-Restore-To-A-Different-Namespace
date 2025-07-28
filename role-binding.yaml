@@ -9,5 +9,5 @@ roleRef:
   name: percona-operator
 subjects:
   - kind: ServiceAccount
-    name: percona-operator
+    name: percona-operator-pxc-operator
     namespace: percona-operator  # Where the operator is running

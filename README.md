@@ -15,7 +15,7 @@ This repo contains all the information needed to run 2 **percona-pxc** clusters 
      - Grant the operator full access to the pxc-db clusters' namespaces (RBAC)
    - 
 1. Setup DB
-   - Configure values.yaml 
+   - Install the DB using helm-chart
    - Put some data into the db
 2. Verify backups
    - Launch manual backup  
@@ -32,14 +32,19 @@ This repo contains all the information needed to run 2 **percona-pxc** clusters 
    - Migrate the update to the main DB 
 
 # Creating the operator
-```
+>**_Note_**:  If you want to settle all the RBAC stuff using a custom `values.yaml` file, [see this](#pxc-operator-values) first
+```bash
 # Deploy the operator
 helm install -n percona-operator percona-helm-charts/charts/pxc-operator --create-namespace
-
+```
+### Granting permissions to the operator 
+#### Using RBAC
+```bash
 # Create cluster-wide ClusterRole for the operator
 kubectl create -f cluster-role.yaml
 
 # Grant access to the relevant namespaces
+kubectl create -f role-binding.yaml -n percona-operator
 kubectl create -f role-binding.yaml -n percona
 kubectl create -f role-binding.yaml -n percona-stage
 
@@ -50,12 +55,24 @@ kubectl -n percona-operator edit deployment percona-operator-pxc-operator
 # Rollout the operator to apply the changes
 kubectl rollout restart deployment percona-operator-pxc-operator -n percona-operator
 ```
+#### <a name="pxc-operator-values"> Using a custom values file
+>**_Note:_**:  This file watches the namespaces `percona` and `percona-stage`. Unless these are the namespaces you use, make sure to change those. 
+
+I have included a file named [`pxc-operator-values.yaml`](pxc-operator-values.yaml) that already grants these permisisons. Copy this file into the `pxc-operator` chart and deploy using it to grant the permissions, then simply create the rolebindings
+```bash
+# Grant access to the relevant namespaces
+kubectl create -f role-binding.yaml -n percona-operator
+kubectl create -f role-binding.yaml -n percona
+kubectl create -f role-binding.yaml -n percona-stage
+```
 
 # Setting up the Database
-I have included `values.yaml` in the root of the project, this is the `values.yaml` I used when deploying my own **percona pxc-db** instance, it's modified to fit my `k3d` cluster and therefore also be lightweight.
-
 >_**Note:**_ my `values.yaml` file uses a `LoadBalancer` with an external IP to expose the **ProxySQL**, this could be problematic if you can't expose this IP on your environment. Please make sure to modify this accordingly.
-```
+
+I have included [`pxc-db-values.yaml`](pxc-db-values.yaml), this is the `values.yaml` I used when deploying my own **percona pxc-db** instance, it's modified to fit my `k3d` cluster and therefore also be lightweight.
+
+
+```bash
 # Create namespace
 set -l NAMESPACE "percona"
 set -l STAGE_NAMESPACE "percona-stager"
