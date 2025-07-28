@@ -14,3 +14,10 @@ IP_ADDR="1"
 CIDR="16"
 DOCKER_NET="host_inet"
 ```
+
+# Set up MetalLB Address Pool 
+First, [Install MetalLB](https://metallb.universe.tf/installation/).  
+After installing, all that's left to do is to apply these files:
+```bash
+kubectl create -f metallb-ip-pool.yaml metallb-l2-config.yaml
+```
