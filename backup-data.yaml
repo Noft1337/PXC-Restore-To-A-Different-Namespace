@@ -1,0 +1,24 @@
+apiVersion: pxc.percona.com/v1
+kind: PerconaXtraDBClusterBackup
+metadata:
+  creationTimestamp: "2025-07-27T20:59:44Z"
+  finalizers:
+  - percona.com/delete-backup
+  generation: 1
+  name: test-backup
+  namespace: percona-stage
+  resourceVersion: "87479"
+  uid: 8de1c2dd-7294-4aef-9e2c-84531805129b
+spec:
+  pxcCluster: percona-pxc-db-stage
+  storageName: fs-pvc
+status:
+  completed: "2025-07-27T21:00:39Z"
+  destination: pvc/xb-test-backup
+  image: percona/percona-xtradb-cluster-operator:1.17.0-pxc8.0-backup-pxb8.0.35
+  sslInternalSecretName: percona-pxc-db-ssl-internal
+  sslSecretName: percona-pxc-db-ssl
+  state: Succeeded
+  storage_type: filesystem
+  storageName: fs-pvc
+  vaultSecretName: percona-pxc-db-vault

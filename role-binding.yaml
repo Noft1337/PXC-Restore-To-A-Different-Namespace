@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: percona-operator
+  # namespace: set manually with kubectl -n <namespace> 
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: percona-operator
+subjects:
+  - kind: ServiceAccount
+    name: percona-operator
+    namespace: percona-operator  # Where the operator is running
