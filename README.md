@@ -3,8 +3,8 @@ This repo contains all the information needed to run 2 **percona-pxc** clusters 
 
 ## Goals
 1. Fully functional MySQL database (pxc)
-2. Replicating the Database PVC 
-3. Fully functional backups using xtradb-backup
+2. Fully functional backups using xtradb-backup
+3. Restore the backed up DB onto a different cluster
 
 ## How
 0. Setup the environment
