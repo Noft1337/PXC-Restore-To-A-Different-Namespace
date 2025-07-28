@@ -1,5 +1,6 @@
 # Setting up percona on my kind cluster and testing backups
-This repo contains all the information needed to run 2 **percona-pxc** clusters on 2 different namespaces, `percona` & `percona-stage` and performing a full backup of the first cluster `percona` and then restoring it into the second cluster `percona-stage`.  
+This repo contains all the information needed to run 2 **Percona Xtradb Clusters** on 2 different namespaces, `percona` & `percona-stage`.   
+Performing a full backup of the first cluster `percona` and then restoring it into the second cluster `percona-stage`.  
 
 ## Goals
 1. Fully functional MySQL database (pxc)
