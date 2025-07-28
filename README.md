@@ -1,4 +1,4 @@
-# Setting up percona on my kind cluster and testing backups
+# Percona Xtradb Cluster - POC
 This repo contains all the information needed to run 2 **Percona Xtradb Clusters** on 2 different namespaces, `percona` & `percona-stage`.   
 Performing a full backup of the first cluster `percona` and then restoring it into the second cluster `percona-stage`.  
 
@@ -7,7 +7,7 @@ Performing a full backup of the first cluster `percona` and then restoring it in
 2. Fully functional backups using xtradb-backup
 3. Restore the backed up DB onto a different cluster
 
-## How
+## Steps
 0. Setup the environment
    - Create a StorageClass that will serve the PVC of the backup
    - Optional: Set up MetalLB to access the DB outside the cluster
@@ -32,7 +32,20 @@ Performing a full backup of the first cluster `percona` and then restoring it in
    - Update the secondary DB 
    - Migrate the update to the main DB 
 
-# Creating the operator
+# Setting up the environment
+For my environment, I am using a local NAT network that will serve the host (that runs k3d), the nodes of k3d, and the cluster itself.  
+The IPs are assigned to the pods that are running in the cluster using `MetalLB`.  
+For the **PVCs**, I am using an **NFS** that's exported by my host and a `StorageClass` that accesses the share using the **nfs-csi**.
+### Set it up yourself
+1. [Internal NAT & MetalLB](network/README.md)
+2. [Storage - NFS](storage/README.md)
+
+# Setting up Percona
+Before we start, I suggest we clonse the `percona-helm-charts` git repo to be able to modify the charts and then install them using `helm`
+```bash
+git clone git@github.com:percona/percona-helm-charts.git
+```
+## Creating the operator
 >**_Note_**:  If you want to settle all the RBAC stuff using a custom `values.yaml` file, [see this](#pxc-operator-values) first
 ```bash
 # Deploy the operator
@@ -42,12 +55,12 @@ helm install -n percona-operator percona-helm-charts/charts/pxc-operator --creat
 #### Using RBAC
 ```bash
 # Create cluster-wide ClusterRole for the operator
-kubectl create -f cluster-role.yaml
+kubectl create -f templates/cluster-role.yaml
 
 # Grant access to the relevant namespaces
-kubectl create -f role-binding.yaml -n percona-operator
-kubectl create -f role-binding.yaml -n percona
-kubectl create -f role-binding.yaml -n percona-stage
+kubectl create -f templates/role-binding.yaml -n percona-operator
+kubectl create -f templates/role-binding.yaml -n percona
+kubectl create -f templates/role-binding.yaml -n percona-stage
 
 # Make the operator watch the namespaces of our pxc-dbs 
 kubectl -n percona-operator edit deployment percona-operator-pxc-operator
@@ -62,12 +75,12 @@ kubectl rollout restart deployment percona-operator-pxc-operator -n percona-oper
 I have included a file named [`pxc-operator-values.yaml`](pxc-operator-values.yaml) that already grants these permisisons. Copy this file into the `pxc-operator` chart and deploy using it to grant the permissions, then simply create the rolebindings
 ```bash
 # Grant access to the relevant namespaces
-kubectl create -f role-binding.yaml -n percona-operator
-kubectl create -f role-binding.yaml -n percona
-kubectl create -f role-binding.yaml -n percona-stage
+kubectl create -f templates/role-binding.yaml -n percona-operator
+kubectl create -f templates/role-binding.yaml -n percona
+kubectl create -f templates/role-binding.yaml -n percona-stage
 ```
 
-# Setting up the Database
+## Setting up the Database
 >_**Note:**_ my `values.yaml` file uses a `LoadBalancer` with an external IP to expose the **ProxySQL**, this could be problematic if you can't expose this IP on your environment. Please make sure to modify this accordingly.
 
 I have included [`pxc-db-values.yaml`](pxc-db-values.yaml), this is the `values.yaml` I used when deploying my own **percona pxc-db** instance, it's modified to fit my `k3d` cluster and therefore also be lightweight.
