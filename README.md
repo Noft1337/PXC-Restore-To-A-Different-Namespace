@@ -14,7 +14,6 @@ Performing a full backup of the first cluster `percona` and then restoring it in
    - Get the percona-helm-chart
    - Install the percona-operator
      - Grant the operator full access to the pxc-db clusters' namespaces (RBAC)
-   - 
 1. Setup DB
    - Install the DB using helm-chart
    - Put some data into the db
@@ -37,8 +36,8 @@ For my environment, I am using a local NAT network that will serve the host (tha
 The IPs are assigned to the pods that are running in the cluster using `MetalLB`.  
 For the **PVCs**, I am using an **NFS** that's exported by my host and a `StorageClass` that accesses the share using the **nfs-csi**.
 ### Set it up yourself
-1. [Internal NAT & MetalLB](network/README.md)
-2. [Storage - NFS](storage/README.md)
+  1. [Internal NAT & MetalLB](network/)
+  2. [Storage - NFS](storage/)
 
 # Setting up Percona
 Before we start, I suggest we clonse the `percona-helm-charts` git repo to be able to modify the charts and then install them using `helm`
@@ -85,7 +84,6 @@ kubectl create -f templates/role-binding.yaml -n percona-stage
 
 I have included [`pxc-db-values.yaml`](pxc-db-values.yaml), this is the `values.yaml` I used when deploying my own **percona pxc-db** instance, it's modified to fit my `k3d` cluster and therefore also be lightweight.
 
-
 ```bash
 # Create namespace
 set -l NAMESPACE "percona"
@@ -97,3 +95,27 @@ helm install percona-pxc-db -n $NAMESPACE percona-helm-charts/charts/pxc-db
 # Install percona-stage 
 helm install percona-pxc-db-stage -n $STAGE_NAMESPACE percona-helm-charts/charts/pxc-db
 ```
+
+### Test the DBs
+Run these commands after the states of all the pods in both namespaces has turned into `Running`. If both commands result in a MySQL prompt, then the deployment has been successful
+```bash
+# Test percona-stage
+set -l ROOT_STAGE_PASSWORD $(kubectl -n percona-stage get secrets percona-pxc-db-stage-secrets -o jsonpath="{.data.root}" | base64 --decode)
+kubectl -n percona-stage exec -ti percona-pxc-db-stage-pxc-0 -c pxc -- mysql -uroot -p"$ROOT_STAGE_PASSWORD"
+
+# Test percona
+set -l ROOT_PASSWORD $(kubectl -n percona get secrets percona-pxc-db-secrets -o jsonpath="{.data.root}" | base64 --decode)
+kubectl -n percona exec -ti percona-pxc-db-pxc-0 -c pxc -- mysql -uroot -p"$ROOT_PASSWORD"
+```
+
+## Add (test) data to the DB 
+>**_Note_**: The `$PERCONA_IP` variable is the ip address that's set in the `proxysql.expose.loadBalancerIP` field inside `pxc-db/values.yaml` 
+
+For this POC, I am using [test_db](https://github.com/datacharmer/test_db)'s test databases in order to put data in my DB. For this reason, I found it very convenient to set up external access to the **ProxySQL**, so I can use the `mysql` command in order to load the example database into my **pxc-db**. This is how its done using en external IP:
+```bash 
+set -l ROOT_PASSWORD $(kubectl -n percona get secrets percona-pxc-db-secrets -o jsonpath="{.data.root}" | base64 --decode)
+mysql -h $PERCONA_IP -u root -p$ROOT_PASSWORD --skip-ssl < employees.sql
+```
+
+# Backup & Restore the DB
+For the **Backup & Restore** section see [this section](backup/)
