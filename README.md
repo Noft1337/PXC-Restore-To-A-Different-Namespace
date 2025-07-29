@@ -122,7 +122,7 @@ done
 ```bash
 set ns_list "$OPERATOR_NAMESPACE" "$PROD_NAMESPACE" "$STAGE_NAMESPACE"
 # Grant access to the relevant namespaces
-for ns in ns_list
+for ns in $ns_list
    yq "
    .metadata.name = \"$OPERATOR_REL_NAME\" |
    .metadata.namespace = \"$OPERATOR_NAMESPACE\" |

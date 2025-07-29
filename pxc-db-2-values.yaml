@@ -127,7 +127,8 @@ pxc:
   sidecarResources:
     requests: {}
     limits: {}
-  nodeSelector: {}
+  nodeSelector:
+    proxysql: stage
   #  disktype: ssd
   # topologySpreadConstraints:
   # - labelSelector:
@@ -445,13 +446,13 @@ proxysql:
     type: LoadBalancer
   #   annotations:
   #     service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
-  #   externalTrafficPolicy: Cluster
+    # externalTrafficPolicy: Local
   #   internalTrafficPolicy: Cluster
   #   labels:
   #     rack: rack-22
   #   loadBalancerSourceRanges:
   #     - 10.0.0.0/8
-    loadBalancerIP: 172.31.0.52
+    loadBalancerIP: 172.22.0.52
   # priorityClassName: high-priority
   # schedulerName: mycustom-scheduler
   readinessDelaySec: 15
@@ -470,7 +471,8 @@ proxysql:
   sidecarResources:
     requests: {}
     limits: {}
-  nodeSelector: {}
+  nodeSelector:
+    proxysql: stage
   #  disktype: ssd
   # topologySpreadConstraints:
   # - labelSelector:
