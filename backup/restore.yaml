@@ -1,10 +1,9 @@
 apiVersion: pxc.percona.com/v1
 kind: PerconaXtraDBClusterRestore
 metadata:
+  name: backup-restoration
   finalizers:
     - percona.com/delete-backup
-  name: test-backup
-  namespace: percona
 spec:
   pxcCluster: percona-pxc-db-stage
   backupName: test-backup
