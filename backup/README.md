@@ -1,0 +1,2 @@
+# Backup & Restoration of PXC Databases
+In this section, we're going to launch an on-demand **PXC-Backup** on the **pxc-db** that's ran inside the `percona` namespace and then restore the data into the **pxc-db** that's ran in `percona-stage`

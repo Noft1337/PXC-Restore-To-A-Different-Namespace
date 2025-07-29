@@ -11,7 +11,8 @@ image: ""
 # set if you want to specify a namespace to watch
 # defaults to `.Release.namespace` if left blank
 # multiple namespaces can be specified and separated by comma
-watchNamespace: percona,percona-stage
+# todo: uncomment
+# watchNamespace: percona-prod,percona-stage 
 # set if you want that watched namespaces are created by helm
 # createNamespace: false
 

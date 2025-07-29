@@ -40,15 +40,48 @@ For the **PVCs**, I am using an **NFS** that's exported by my host and a `Storag
   2. [Storage - NFS](storage/)
 
 # Setting up Percona
-Before we start, I suggest we clonse the `percona-helm-charts` git repo to be able to modify the charts and then install them using `helm`
+## Prequisites
+These environment variables will be used for the different Percona Xtradb Clusters:
+#### Bash Syntax
+```bash
+# Release Names
+STAGE_REL_NAME="pxc-db-stage"
+PROD_REL_NAME="pxc-db-prod"
+OPERATOR_REL_NAME="pxc-operator"
+# Namespaces
+STAGE_NAMESPACE="percona-stage"
+PROD_NAMESPACE="percona-prod"
+OPERATOR_NAMESPACE="percona-operator"
+```
+#### Fish syntax
+```bash
+# Release Names
+set -l STAGE_REL_NAME "pxc-db-stage"
+set -l PROD_REL_NAME "pxc-db-prod"
+set -l OPERATOR_REL_NAME "pxc-operator"
+# Namespaces
+set -l STAGE_NAMESPACE "percona-stage"
+set -l PROD_NAMESPACE "percona-prod"
+set -l OPERATOR_NAMESPACE "percona-operator"
+```
+#### Create the necessary namespaces
+```bash
+# Create the namespaces
+kubectl create namespace "$STAGE_NAMESPACE" 
+kubectl create namespace "$PROD_NAMESPACE"
+kubectl create namespace "$OPERATOR_NAMESPACE"
+```
+
+Before we start, I suggest cloning the `percona-helm-charts` git repo to be able to modify the charts and then install them using `helm`
 ```bash
 git clone git@github.com:percona/percona-helm-charts.git
 ```
+---
 ## Creating the operator
 >**_Note_**:  If you want to settle all the RBAC stuff using a custom `values.yaml` file, [see this](#pxc-operator-values) first
 ```bash
 # Deploy the operator
-helm install -n percona-operator percona-helm-charts/charts/pxc-operator --create-namespace
+helm install "$OPERATOR_REL_NAME" -n "$OPERATOR_NAMESPACE" percona-helm-charts/charts/pxc-operator
 ```
 ### Granting permissions to the operator 
 #### Using RBAC
@@ -57,16 +90,16 @@ helm install -n percona-operator percona-helm-charts/charts/pxc-operator --creat
 kubectl create -f templates/cluster-role.yaml
 
 # Grant access to the relevant namespaces
-kubectl create -f templates/role-binding.yaml -n percona-operator
-kubectl create -f templates/role-binding.yaml -n percona
-kubectl create -f templates/role-binding.yaml -n percona-stage
+kubectl create -f templates/role-binding.yaml -n "$OPERATOR_NAMESPACE"
+kubectl create -f templates/role-binding.yaml -n "$PROD_NAMESPACE"
+kubectl create -f templates/role-binding.yaml -n "$STAGE_NAMESPACE"
 
 # Make the operator watch the namespaces of our pxc-dbs 
-kubectl -n percona-operator edit deployment percona-operator-pxc-operator
-# Change the WATCH_NAMESPACE env variable to "percona,percona-stage,percona-operator"
+kubectl -n "$OPERATOR_NAMESPACE" edit deployment "$OPERATOR_REL_NAME"
+# Change the WATCH_NAMESPACE env variable to ""$OPERATOR_NAMESPACE,$PROD_NAMESPACE,$STAGE_NAMESPACE""
 
 # Rollout the operator to apply the changes
-kubectl rollout restart deployment percona-operator-pxc-operator -n percona-operator
+kubectl rollout restart deployment "$OPERATOR_REL_NAME" -n "$OPERATOR_NAMESPACE"
 ```
 #### <a name="pxc-operator-values"> Using a custom values file
 >**_Note:_**:  This file watches the namespaces `percona` and `percona-stage`. Unless these are the namespaces you use, make sure to change those. 
@@ -74,9 +107,9 @@ kubectl rollout restart deployment percona-operator-pxc-operator -n percona-oper
 I have included a file named [`pxc-operator-values.yaml`](pxc-operator-values.yaml) that already grants these permisisons. Copy this file into the `pxc-operator` chart and deploy using it to grant the permissions, then simply create the rolebindings
 ```bash
 # Grant access to the relevant namespaces
-kubectl create -f templates/role-binding.yaml -n percona-operator
-kubectl create -f templates/role-binding.yaml -n percona
-kubectl create -f templates/role-binding.yaml -n percona-stage
+kubectl create -f templates/role-binding.yaml -n "$OPERATOR_NAMESPACE"
+kubectl create -f templates/role-binding.yaml -n "$PROD_NAMESPACE"
+kubectl create -f templates/role-binding.yaml -n "$STAGE_NAMESPACE"
 ```
 
 ## Setting up the Database
@@ -86,35 +119,32 @@ I have included [`pxc-db-values.yaml`](pxc-db-values.yaml), this is the `values.
 
 ```bash
 # Create namespace
-set -l NAMESPACE "percona"
-set -l STAGE_NAMESPACE "percona-stager"
-
 # Install percona
-helm install percona-pxc-db -n $NAMESPACE percona-helm-charts/charts/pxc-db
+helm install "$PROD_REL_NAME" -n "$PROD_NAMESPACE" percona-helm-charts/charts/pxc-db
 
 # Install percona-stage 
-helm install percona-pxc-db-stage -n $STAGE_NAMESPACE percona-helm-charts/charts/pxc-db
+helm install "$STAGE_REL_NAME" -n "$STAGE_NAMESPACE" percona-helm-charts/charts/pxc-db
 ```
 
 ### Test the DBs
 Run these commands after the states of all the pods in both namespaces has turned into `Running`. If both commands result in a MySQL prompt, then the deployment has been successful
 ```bash
 # Test percona-stage
-set -l ROOT_STAGE_PASSWORD $(kubectl -n percona-stage get secrets percona-pxc-db-stage-secrets -o jsonpath="{.data.root}" | base64 --decode)
-kubectl -n percona-stage exec -ti percona-pxc-db-stage-pxc-0 -c pxc -- mysql -uroot -p"$ROOT_STAGE_PASSWORD"
+set -l ROOT_STAGE_PASSWORD $(kubectl -n "$STAGE_NAMESPACE" get secrets "$STAGE_REL_NAME-secrets" -o jsonpath="{.data.root}" | base64 --decode)
+kubectl -n "$STAGE_NAMESPACE" exec -ti "$STAGE_REL_NAME-pxc-0" -c pxc -- mysql -uroot -p"$ROOT_STAGE_PASSWORD"
 
 # Test percona
-set -l ROOT_PASSWORD $(kubectl -n percona get secrets percona-pxc-db-secrets -o jsonpath="{.data.root}" | base64 --decode)
-kubectl -n percona exec -ti percona-pxc-db-pxc-0 -c pxc -- mysql -uroot -p"$ROOT_PASSWORD"
+set -l ROOT_PROD_PASSWORD $(kubectl -n "$PROD_NAMESPACE" get secrets "$PROD_REL_NAME-secrets" -o jsonpath="{.data.root}" | base64 --decode)
+kubectl -n "$PROD_NAMESPACE" exec -ti "$PROD_REL_NAME-pxc-0" -c pxc -- mysql -uroot -p"$ROOT_PROD_PASSWORD"
 ```
 
 ## Add (test) data to the DB 
->**_Note_**: The `$PERCONA_IP` variable is the ip address that's set in the `proxysql.expose.loadBalancerIP` field inside `pxc-db/values.yaml` 
+>**_Note_**: The `"$PERCONA_IP`" variable is the ip address that's set in the `proxysql.expose.loadBalancerIP` field inside `pxc-db/values.yaml` 
 
 For this POC, I am using [test_db](https://github.com/datacharmer/test_db)'s test databases in order to put data in my DB. For this reason, I found it very convenient to set up external access to the **ProxySQL**, so I can use the `mysql` command in order to load the example database into my **pxc-db**. This is how its done using en external IP:
 ```bash 
 set -l ROOT_PASSWORD $(kubectl -n percona get secrets percona-pxc-db-secrets -o jsonpath="{.data.root}" | base64 --decode)
-mysql -h $PERCONA_IP -u root -p$ROOT_PASSWORD --skip-ssl < employees.sql
+mysql -h "$PERCONA_IP" -u root -p"$ROOT_PASSWORD" --skip-ssl < employees.sql
 ```
 
 # Backup & Restore the DB
