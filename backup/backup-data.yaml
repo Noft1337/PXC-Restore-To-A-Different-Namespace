@@ -1,24 +1,27 @@
 apiVersion: pxc.percona.com/v1
 kind: PerconaXtraDBClusterBackup
 metadata:
-  creationTimestamp: "2025-07-27T20:59:44Z"
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"pxc.percona.com/v1","kind":"PerconaXtraDBClusterBackup","metadata":{"annotations":{},"finalizers":["percona.com/delete-backup"],"name":"backup-test-2025-07-29","namespace":"percona-prod"},"spec":{"pxcCluster":"pxc-db-prod","storageName":"fs-pvc"}}
+  creationTimestamp: "2025-07-29T19:05:14Z"
   finalizers:
   - percona.com/delete-backup
   generation: 1
-  name: test-backup
-  namespace: percona-stage
-  resourceVersion: "87479"
-  uid: 8de1c2dd-7294-4aef-9e2c-84531805129b
+  name: backup-test-2025-07-29
+  namespace: percona-prod
+  resourceVersion: "16364"
+  uid: 2aa04dd5-ca32-4537-8f08-056b7d39065a
 spec:
-  pxcCluster: percona-pxc-db-stage
+  pxcCluster: pxc-db-prod
   storageName: fs-pvc
 status:
-  completed: "2025-07-27T21:00:39Z"
-  destination: pvc/xb-test-backup
+  completed: "2025-07-29T19:05:44Z"
+  destination: pvc/xb-backup-test-2025-07-29
   image: percona/percona-xtradb-cluster-operator:1.17.0-pxc8.0-backup-pxb8.0.35
-  sslInternalSecretName: percona-pxc-db-ssl-internal
-  sslSecretName: percona-pxc-db-ssl
+  sslInternalSecretName: pxc-db-prod-ssl-internal
+  sslSecretName: pxc-db-prod-ssl
   state: Succeeded
   storage_type: filesystem
   storageName: fs-pvc
-  vaultSecretName: percona-pxc-db-vault
+  vaultSecretName: pxc-db-prod-vault

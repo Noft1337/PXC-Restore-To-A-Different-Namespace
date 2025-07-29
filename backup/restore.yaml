@@ -1,9 +1,32 @@
 apiVersion: pxc.percona.com/v1
 kind: PerconaXtraDBClusterRestore
 metadata:
-  name: backup-restoration
-  finalizers:
-    - percona.com/delete-backup
+  name: nil
 spec:
-  pxcCluster: percona-pxc-db-stage
-  backupName: test-backup
+  pxcCluster: nil
+  backupSource:
+    destination: pvc/PVC_VOLUME_NAME
+    storageName: pvc
+#  backupSource:
+#    verifyTLS: true
+#    destination: s3://S3-BUCKET-NAME/BACKUP-NAME or destination: azure://CONTAINER-NAME/BACKUP-NAME
+#    s3:
+#      bucket: S3-BINLOG-BACKUP-BUCKET-NAME-HERE
+#      credentialsSecret: my-cluster-name-backup-s3
+#      endpointUrl: https://s3.us-west-2.amazonaws.com/
+#      region: us-west-2
+#    azure:
+#      container: <your-container-name>
+#      credentialsSecret: my-cluster-name-backup-azure
+#  pitr:
+#    type: latest
+#    date: "yyyy-mm-dd hh:mm:ss"
+#    gtid: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee:nnn"
+#    backupSource:
+#      verifyTLS: true
+#      storageName: "STORAGE-NAME-HERE"
+#      s3:
+#        bucket: S3-BINLOG-BACKUP-BUCKET-NAME-HERE
+#        credentialsSecret: my-cluster-name-backup-s3
+#        endpointUrl: https://s3.us-west-2.amazonaws.com/
+#        region: us-west-2
