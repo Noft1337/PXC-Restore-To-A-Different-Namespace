@@ -4,7 +4,6 @@ metadata:
   finalizers:
     - percona.com/delete-backup
   name: test-backup
-  namespace: percona
 spec:
   pxcCluster: percona-pxc-db
   storageName: fs-pvc
