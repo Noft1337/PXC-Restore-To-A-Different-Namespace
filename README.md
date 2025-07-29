@@ -1,8 +1,13 @@
 # Percona Xtradb Cluster - POC
-This repo contains all the information needed to run 2 **Percona Xtradb Clusters** on 2 different namespaces, `percona-prod` & `percona-stage`.   
+This repo contains all the information needed to run 2 **Percona Xtradb Clusters** on 2 different namespaces
+- Namespace: `percona-prod`
+Cluster: `pxc-db-prod`
+- Namespace: `percona-stage`
+Cluster: `pxc-db-stage`
+
 Performing a full backup of the first cluster `pxc-db-prod` and then restoring it into the second cluster `pxc-db-stage`.  
 
-I have included the [`create-k3d.sh`](create-k3d.sh) script that basically sets up a `k3d` cluster from scratch and installs all the needed prerequisites for the **Percona-Xtradb-Cluster** to run succesfully to my standards
+I have included the [`create-k3d.sh`](create-k3d.sh) script that basically sets up a `k3d` cluster from scratch and installs all the needed prerequisites for the **Percona-Xtradb-Cluster** to run succesfully according to my needs & standards
 
 ## Goals
 1. Fully functional MySQL database (pxc)
@@ -15,23 +20,15 @@ I have included the [`create-k3d.sh`](create-k3d.sh) script that basically sets 
    - Optional: Set up MetalLB to access the DB outside the cluster
    - Get the percona-helm-chart
    - Install the percona-operator
-     - Grant the operator full access to the pxc-db clusters' namespaces (RBAC)
+   - Install 2 **pxc-db** clusters
 1. Setup DB
    - Install the DB using helm-chart
    - Put some data into the db
-2. Verify backups
+2. Backup `prod`
    - Launch manual backup  
-   - Delete all DB Data
-   - Recover from backup
-3. Replicate DB
-   - Set up a replication
-   - Create a secondery db schema in the pxc
-   - Replicate all data from the main db to the secondary
-   - Verify integrity 
-4. Simulate a schema change in the db
-   - With the replicated db, stop the replication
-   - Update the secondary DB 
-   - Migrate the update to the main DB 
+3. Restore into `stage`
+   - Move the backup PVC from `percona-prod` to `percona-stage`
+   - Run the restoration
 
 # Setting up the environment
 For my environment, I am using a local NAT network that will serve the host (that runs k3d), the nodes of k3d, and the cluster itself.  
