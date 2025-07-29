@@ -84,15 +84,10 @@ git clone git@github.com:percona/percona-helm-charts.git
 helm install "$OPERATOR_REL_NAME" -n "$OPERATOR_NAMESPACE" percona-helm-charts/charts/pxc-operator
 ```
 ### Granting permissions to the operator 
-#### Using RBAC
+#### **Creating ClusterRole**
 ```bash
-# Create cluster-wide ClusterRole for the operator
-kubectl create -f templates/cluster-role.yaml
-
-# Grant access to the relevant namespaces
-kubectl create -f templates/role-binding.yaml -n "$OPERATOR_NAMESPACE"
-kubectl create -f templates/role-binding.yaml -n "$PROD_NAMESPACE"
-kubectl create -f templates/role-binding.yaml -n "$STAGE_NAMESPACE"
+# Create modified ClusterRole
+yq ".metadata.name = \"$OPERATOR_REL_NAME\"" templates/cluster-role.yaml | kubectl create -f -
 
 # Make the operator watch the namespaces of our pxc-dbs 
 kubectl -n "$OPERATOR_NAMESPACE" edit deployment "$OPERATOR_REL_NAME"
@@ -101,15 +96,41 @@ kubectl -n "$OPERATOR_NAMESPACE" edit deployment "$OPERATOR_REL_NAME"
 # Rollout the operator to apply the changes
 kubectl rollout restart deployment "$OPERATOR_REL_NAME" -n "$OPERATOR_NAMESPACE"
 ```
-#### <a name="pxc-operator-values"> Using a custom values file
+---
+#### <a name="pxc-operator-values"> **Using a custom values file**
 >**_Note:_**:  This file watches the namespaces `percona` and `percona-stage`. Unless these are the namespaces you use, make sure to change those. 
 
 I have included a file named [`pxc-operator-values.yaml`](pxc-operator-values.yaml) that already grants these permisisons. Copy this file into the `pxc-operator` chart and deploy using it to grant the permissions, then simply create the rolebindings
+--- 
+### **Creating the RoleBinds** 
+##### **Bash**
 ```bash
+ns_list=("$OPERATOR_NAMESPACE" "$PROD_NAMESPACE" "$STAGE_NAMESPACE")
 # Grant access to the relevant namespaces
-kubectl create -f templates/role-binding.yaml -n "$OPERATOR_NAMESPACE"
-kubectl create -f templates/role-binding.yaml -n "$PROD_NAMESPACE"
-kubectl create -f templates/role-binding.yaml -n "$STAGE_NAMESPACE"
+for ns in "${ns_list[@]}"; do 
+   yq "
+   .metadata.name = \"$OPERATOR_REL_NAME\" |
+   .metadata.namespace = \"$OPERATOR_NAMESPACE\" |
+   .roleRef.name = \"$OPERATOR_REL_NAME\" |
+   .subjects[0].name = \"$OPERATOR_REL_NAME\" |
+   .subjects[0].namespace = \"$OPERATOR_NAMESPACE\"
+   " templates/role-binding.yaml | kubectl create -f -n $ns - 
+done
+```
+---
+##### **Fish**
+```bash
+set ns_list "$OPERATOR_NAMESPACE" "$PROD_NAMESPACE" "$STAGE_NAMESPACE"
+# Grant access to the relevant namespaces
+for ns in ns_list
+   yq "
+   .metadata.name = \"$OPERATOR_REL_NAME\" |
+   .metadata.namespace = \"$OPERATOR_NAMESPACE\" |
+   .roleRef.name = \"$OPERATOR_REL_NAME\" |
+   .subjects[0].name = \"$OPERATOR_REL_NAME\" |
+   .subjects[0].namespace = \"$OPERATOR_NAMESPACE\"
+   " templates/role-binding.yaml | kubectl create -f -n $ns - 
+end
 ```
 
 ## Setting up the Database
@@ -149,3 +170,5 @@ mysql -h "$PERCONA_IP" -u root -p"$ROOT_PASSWORD" --skip-ssl < employees.sql
 
 # Backup & Restore the DB
 For the **Backup & Restore** section see [this section](backup/)
+
+
