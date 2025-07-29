@@ -7,8 +7,6 @@ Cluster: `pxc-db-stage`
 
 Performing a full backup of the first cluster `pxc-db-prod` and then restoring it into the second cluster `pxc-db-stage`.  
 
-I have included the [`create-k3d.sh`](create-k3d.sh) script that basically sets up a `k3d` cluster from scratch and installs all the needed prerequisites for the **Percona-Xtradb-Cluster** to run succesfully according to my needs & standards
-
 ## Goals
 1. Fully functional MySQL database (pxc)
 2. Fully functional backups using xtradb-backup
@@ -29,7 +27,7 @@ I have included the [`create-k3d.sh`](create-k3d.sh) script that basically sets 
 3. Restore into `stage`
    - Move the backup PVC from `percona-prod` to `percona-stage`
    - Run the restoration
-
+---
 # Setting up the environment
 For my environment, I am using a local NAT network that will serve the host (that runs k3d), the nodes of k3d, and the cluster itself.  
 The IPs are assigned to the pods that are running in the cluster using `MetalLB`.  
@@ -39,6 +37,8 @@ For the **PVCs**, I am using an **NFS** that's exported by my host and a `Storag
   2. [Storage - NFS](storage/)
 
 # Setting up Percona
+## Before we begin
+I have included the [`create-k3d.sh`](create-k3d.sh) script that basically sets up a `k3d` cluster from scratch and installs all the needed prerequisites for the **Percona-Xtradb-Cluster** to run succesfully according to my needs & standards. If you want a deeper understanding of the process, feel free to coninute reading (or read the script) 
 ## Prequisites
 These environment variables will be used for the different Percona Xtradb Clusters:
 #### Bash Syntax
