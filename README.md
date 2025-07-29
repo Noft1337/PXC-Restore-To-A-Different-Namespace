@@ -1,6 +1,8 @@
 # Percona Xtradb Cluster - POC
-This repo contains all the information needed to run 2 **Percona Xtradb Clusters** on 2 different namespaces, `percona` & `percona-stage`.   
-Performing a full backup of the first cluster `percona` and then restoring it into the second cluster `percona-stage`.  
+This repo contains all the information needed to run 2 **Percona Xtradb Clusters** on 2 different namespaces, `percona-prod` & `percona-stage`.   
+Performing a full backup of the first cluster `pxc-db-prod` and then restoring it into the second cluster `pxc-db-stage`.  
+
+I have included the [`create-k3d.sh`](create-k3d.sh) script that basically sets up a `k3d` cluster from scratch and installs all the needed prerequisites for the **Percona-Xtradb-Cluster** to run succesfully to my standards
 
 ## Goals
 1. Fully functional MySQL database (pxc)
@@ -136,15 +138,16 @@ end
 ## Setting up the Database
 >_**Note:**_ my `values.yaml` file uses a `LoadBalancer` with an external IP to expose the **ProxySQL**, this could be problematic if you can't expose this IP on your environment. Please make sure to modify this accordingly.
 
-I have included [`pxc-db-values.yaml`](pxc-db-values.yaml), this is the `values.yaml` I used when deploying my own **percona pxc-db** instance, it's modified to fit my `k3d` cluster and therefore also be lightweight.
+I have included [`pxc-db-prod-values.yaml`](pxc-db-prod-values.yaml) & [`pxc-db-stage-values.yaml`](pxc-db-stage-values.yaml).  \
+These are the `values.yaml` files I used to deploy both of the **percona pxc-db** instances, it's modified to fit my `k3d` cluster and therefore also be lightweight.
 
 ```bash
 # Create namespace
 # Install percona
-helm install "$PROD_REL_NAME" -n "$PROD_NAMESPACE" percona-helm-charts/charts/pxc-db
+helm install "$PROD_REL_NAME" -n "$PROD_NAMESPACE" percona-helm-charts/charts/pxc-db --values pxc-db-prod-values.yaml
 
 # Install percona-stage 
-helm install "$STAGE_REL_NAME" -n "$STAGE_NAMESPACE" percona-helm-charts/charts/pxc-db
+helm install "$STAGE_REL_NAME" -n "$STAGE_NAMESPACE" percona-helm-charts/charts/pxc-db --values pxc-db-stage-values.yaml
 ```
 
 ### Test the DBs
