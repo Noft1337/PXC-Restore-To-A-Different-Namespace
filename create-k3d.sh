@@ -105,7 +105,7 @@ print_header "Waiting for $OPERATOR_REL_NAME on $OPERATOR_NAMESPACE"
 wait_for_resource "pod" "$OPERATOR_NAMESPACE" "$PXC_OPERATOR_LABEL" 120
 
 print_header "Installing $STAGE_REL_NAME on $STAGE_NAMESPACE"
-helm install "$STAGE_REL_NAME" -n "$STAGE_NAMESPACE" ../pxc-db-stage --values pxc-db-stage-values.yaml --wait
+helm install "$STAGE_REL_NAME" -n "$STAGE_NAMESPACE" ../pxc-db --values pxc-db-stage-values.yaml --wait
 print_header "Waiting for $STAGE_REL_NAME on $STAGE_NAMESPACE"
 wait_for_resource "pod" "$STAGE_NAMESPACE" "$PXC_DB_LABEL" 300
 
