@@ -100,7 +100,7 @@ PXC_DB_LABEL='app.kubernetes.io/name=percona-xtradb-cluster'
 PXC_OPERATOR_LABEL='app.kubernetes.io/name=pxc-operator'
 
 print_header "Installing Percona Operator"
-helm install "$OPERATOR_REL_NAME" -n "$OPERATOR_NAMESPACE" ../pxc-operator/ --wait
+helm install "$OPERATOR_REL_NAME" -n "$OPERATOR_NAMESPACE" ../pxc-operator/ --values pxc-operator-values.yaml --wait
 print_header "Waiting for $OPERATOR_REL_NAME on $OPERATOR_NAMESPACE"
 wait_for_resource "pod" "$OPERATOR_NAMESPACE" "$PXC_OPERATOR_LABEL" 120
 

@@ -64,7 +64,7 @@ tls:
   #   group: cert-manager.io
 
 pxc:
-  size: 1
+  size: 3
   image:
     repository: percona/percona-xtradb-cluster
     tag: 8.0.41-32.1
@@ -127,8 +127,8 @@ pxc:
   sidecarResources:
     requests: {}
     limits: {}
-  nodeSelector:
-    proxysql: prod
+  nodeSelector: {}
+    # proxysql: prod
   #  disktype: ssd
   # topologySpreadConstraints:
   # - labelSelector:
@@ -137,16 +137,16 @@ pxc:
   #   maxSkew: 1
   #   topologyKey: kubernetes.io/hostname
   #   whenUnsatisfiable: DoNotSchedule
-  affinity:
-    podAntiAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        - labelSelector:
-            matchExpressions:
-              - key: app.kubernetes.io/component
-                operator: In
-                values:
-                  - pxc
-          topologyKey: kubernetes.io/hostname
+  affinity: {}
+    # podAntiAffinity:
+    #   requiredDuringSchedulingIgnoredDuringExecution:
+    #     - labelSelector:
+    #         matchExpressions:
+    #           - key: app.kubernetes.io/component
+    #             operator: In
+    #             values:
+    #               - pxc
+    #       topologyKey: kubernetes.io/hostname
     # advanced:
     #   nodeAffinity:
     #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -388,7 +388,7 @@ haproxy:
 
 proxysql:
   enabled: true
-  size: 1
+  size: 3
   image: "percona/proxysql2:2.7.1"
   # imagePullPolicy: Always
   imagePullSecrets: []
@@ -479,8 +479,8 @@ proxysql:
   sidecarResources:
     requests: {}
     limits: {}
-  nodeSelector:
-    proxysql: prod
+  nodeSelector: {}
+    # proxysql: prod
   #  disktype: ssd
   # topologySpreadConstraints:
   # - labelSelector:
@@ -490,16 +490,16 @@ proxysql:
   #   topologyKey: kubernetes.io/hostname
   #   whenUnsatisfiable: DoNotSchedule
   # serviceAccountName: percona-xtradb-cluster-operator-workload
-  affinity:
-    podAntiAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        - labelSelector:
-            matchExpressions:
-              - key: app.kubernetes.io/component
-                operator: In
-                values:
-                  - proxysql
-          topologyKey: kubernetes.io/hostname
+  affinity: {}
+    # podAntiAffinity:
+    #   requiredDuringSchedulingIgnoredDuringExecution:
+    #     - labelSelector:
+    #         matchExpressions:
+    #           - key: app.kubernetes.io/component
+    #             operator: In
+    #             values:
+    #               - proxysql
+    #       topologyKey: kubernetes.io/hostname
     # advanced:
     #   nodeAffinity:
     #     requiredDuringSchedulingIgnoredDuringExecution:
